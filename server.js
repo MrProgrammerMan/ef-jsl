@@ -137,7 +137,7 @@ function ordersPage({ manage }) {
 </style></head>
 <body>
   <header>
-    <img src="/logo.avif" alt="logo" onerror="this.style.display='none'">
+    <img src="/logo.png" alt="logo" onerror="this.style.display='none'">
     <h1>${title}</h1>
     <span class="count" id="count"></span>
   </header>
