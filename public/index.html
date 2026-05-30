@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order a Drink</title>
+<style>
+  :root{
+    --bg:#0f1115;--card:#1a1d24;--accent:#7c5cff;--accent2:#5ce0c4;
+    --text:#e8eaf0;--muted:#9aa0ac;--border:#2a2e38;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#1b2030,#0f1115);
+    color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
+  .logo-wrap{text-align:center;margin-bottom:1.5rem}
+  .logo-wrap img{height:96px;max-width:80vw;object-fit:contain}
+  .card{background:var(--card);padding:2rem;border-radius:18px;width:min(420px,92vw);
+    box-shadow:0 12px 50px rgba(0,0,0,.45);border:1px solid var(--border)}
+  h1{margin:0 0 .3rem;font-size:1.5rem;text-align:center}
+  p.sub{margin:0 0 1.6rem;text-align:center;color:var(--muted)}
+  label{display:block;font-size:.85rem;color:var(--muted);margin:0 0 .4rem;text-transform:uppercase;letter-spacing:.05em}
+  input,select{width:100%;padding:.85rem 1rem;border-radius:11px;border:1px solid var(--border);
+    background:#0f1115;color:var(--text);font-size:1rem;margin-bottom:1.2rem;appearance:none}
+  input:focus,select:focus{outline:none;border-color:var(--accent)}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239aa0ac' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 1rem center}
+  button{width:100%;padding:.95rem;border:0;border-radius:11px;
+    background:linear-gradient(135deg,var(--accent),#9a7bff);color:#fff;
+    font-size:1.05rem;font-weight:700;cursor:pointer;transition:filter .1s,transform .05s}
+  button:hover{filter:brightness(1.08)}
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.6;cursor:not-allowed}
+  .hint{font-size:.78rem;color:var(--muted);margin-top:-.9rem;margin-bottom:1.2rem}
+  .toast{position:fixed;left:50%;bottom:2rem;transform:translateX(-50%) translateY(120%);
+    background:var(--accent2);color:#08231d;padding:1rem 1.6rem;border-radius:12px;
+    font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:transform .35s ease;z-index:50}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .toast.err{background:#ff6b6b;color:#2a0606}
+</style>
+</head>
+<body>
+  <div class="logo-wrap">
+    <img src="/logo.avif" alt="Logo" onerror="this.style.display='none'">
+  </div>
+
+  <div class="card">
+    <h1>Order a Drink</h1>
+    <p class="sub">Pick your poison 🍹</p>
+
+    <label for="name">Name</label>
+    <input id="name" type="text" placeholder="Your name" maxlength="20" autocomplete="off">
+    <div class="hint">3–20 letters only.</div>
+
+    <label for="drink">Drink</label>
+    <select id="drink">
+      <option value="" disabled selected>Choose a drink…</option>
+      <option value="jo">The Jo — mint &amp; lime</option>
+      <option value="sti">The Sti — lemonade &amp; orange</option>
+      <option value="lim">The Lim — cranberry &amp; orange</option>
+      <option value="water">Water</option>
+    </select>
+
+    <button id="submit">Submit Order</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  const nameEl=document.getElementById('name');
+  const drinkEl=document.getElementById('drink');
+  const btn=document.getElementById('submit');
+  const toast=document.getElementById('toast');
+  let toastTimer;
+
+  function showToast(msg,isErr){
+    toast.textContent=msg;
+    toast.classList.toggle('err',!!isErr);
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>toast.classList.remove('show'),2500);
+  }
+
+  async function submit(){
+    const name=nameEl.value.trim();
+    const drink=drinkEl.value;
+    if(!/^[A-Za-z]{3,20}$/.test(name)){showToast('Name must be 3–20 letters.',true);return;}
+    if(!drink){showToast('Please choose a drink.',true);return;}
+    btn.disabled=true;
+    try{
+      const r=await fetch('/order',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,drink})});
+      const data=await r.json();
+      if(r.ok&&data.ok){
+        showToast('Order received ✓');
+        nameEl.value='';drinkEl.selectedIndex=0;
+      }else{
+        showToast(data.error||'Something went wrong.',true);
+      }
+    }catch(e){showToast('Network error.',true);}
+    btn.disabled=false;
+  }
+
+  btn.onclick=submit;
+  nameEl.addEventListener('keydown',e=>{if(e.key==='Enter')submit();});
+</script>
+</body>
+</html>
