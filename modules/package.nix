@@ -7,7 +7,7 @@
       packages.default = pkgs.buildNpmPackage {
         inherit pname version;
         src = lib.cleanSource ../.;
-        npmDepsHash = lib.fakeSha256;
+        npmDepsHash = "sha256-CYumWyyMzqGZgRL81OGcvt1nREwK6EyG3qBJpjPVb48=";
         nodejs = pkgs.nodejs_24;
         dontNpmBuild = true;
         nativeBuildInputs = [ pkgs.makeWrapper ];
