@@ -9,7 +9,7 @@
         src = lib.cleanSource ../.;
         npmDepsHash = lib.fakeSha256;
         nodejs = pkgs.nodejs_24;
-        npmBuildScript = null;
+        dontNpmBuild = true;
         nativeBuildInputs = [ pkgs.makeWrapper ];
 
         installPhase = ''
