@@ -23,6 +23,7 @@ const DRINKS = {
   jo:    'The Jo (mint & lime)',
   sti:   'The Sti (lemonade & orange)',
   lim:   'The Lim (cranberry & orange)',
+  carro: 'The Carro (specialty)',
   water: 'Water',
 };
 
