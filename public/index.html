@@ -32,9 +32,9 @@
   button:active{transform:translateY(1px)}
   button:disabled{opacity:.6;cursor:not-allowed}
   .hint{font-size:.78rem;color:var(--muted);margin-top:-.9rem;margin-bottom:1.2rem}
-  .toast{position:fixed;left:50%;bottom:2rem;transform:translateX(-50%) translateY(120%);
+  .toast{position:fixed;left:50%;bottom:2rem;transform:translateX(-50%) translateY(150%);
     background:var(--accent2);color:#08231d;padding:1rem 1.6rem;border-radius:12px;
-    font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:transform .35s ease;z-index:50}
+    font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:transform .35s ease;z-index:50;text-align:center}
   .toast.show{transform:translateX(-50%) translateY(0)}
   .toast.err{background:#ff6b6b;color:#2a0606}
 </style>
@@ -45,7 +45,7 @@
   </div>
 
   <div class="card">
-    <h1>Order a Drink</h1>
+    <h1>Place an Order</h1>
     <p class="sub">Pick your poison 🍹</p>
 
     <label for="name">Name</label>
@@ -54,12 +54,21 @@
 
     <label for="drink">Drink</label>
     <select id="drink">
-      <option value="" disabled selected>Choose a drink…</option>
+      <option value="" selected>No drink</option>
       <option value="jo">The Jo — mint &amp; lime</option>
       <option value="sti">The Sti — lemonade &amp; orange</option>
       <option value="lim">The Lim — cranberry &amp; orange</option>
       <option value="carro">The Carro — specialty</option>
+      <option value="vomsaft">Vomsaft — classic</option>
       <option value="water">Water</option>
+    </select>
+
+    <label for="snack">Snack</label>
+    <select id="snack">
+      <option value="" selected>No snack</option>
+      <option value="fries">Fries</option>
+      <option value="chips">Chips</option>
+      <option value="olives">Olives</option>
     </select>
 
     <button id="submit">Submit Order</button>
@@ -70,31 +79,33 @@
 <script>
   const nameEl=document.getElementById('name');
   const drinkEl=document.getElementById('drink');
+  const snackEl=document.getElementById('snack');
   const btn=document.getElementById('submit');
   const toast=document.getElementById('toast');
   let toastTimer;
 
-  function showToast(msg,isErr){
+  function showToast(msg,isErr,ms){
     toast.textContent=msg;
     toast.classList.toggle('err',!!isErr);
     toast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer=setTimeout(()=>toast.classList.remove('show'),2500);
+    toastTimer=setTimeout(()=>toast.classList.remove('show'),ms||2500);
   }
 
   async function submit(){
     const name=nameEl.value.trim();
     const drink=drinkEl.value;
-    if(!/^[A-Za-z]{3,20}$/.test(name)){showToast('Name must be 3–20 letters.',true);return;}
-    if(!drink){showToast('Please choose a drink.',true);return;}
+    const snack=snackEl.value;
+    if(!/^[A-ZÆØÅa-zæøå ]{3,20}$/.test(name)){showToast('Name must be 3–20 letters.',true);return;}
+    if(!drink&&!snack){showToast('Choose a drink or a snack.',true);return;}
     btn.disabled=true;
     try{
       const r=await fetch('/order',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name,drink})});
+        body:JSON.stringify({name,drink,snack})});
       const data=await r.json();
       if(r.ok&&data.ok){
-        showToast('Order received ✓');
-        nameEl.value='';drinkEl.selectedIndex=0;
+        showToast('Order #'+data.number+' received ✓',false,5000);
+        nameEl.value='';drinkEl.selectedIndex=0;snackEl.selectedIndex=0;
       }else{
         showToast(data.error||'Something went wrong.',true);
       }
